@@ -1,12 +1,11 @@
-
 'use client'
-import React from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useAppContext } from '../context';
 import Button from '../components/Button';
 
 async function getData() {
     const headers = {
-        Authorization: 'Bearer b2738a60408c30f4f0db7461eae38f5b00d6f1862a6c883827e8fa005fb045879754f90d33702b53df443e3dcbf30ba23b9ce448e5a86b1aed6892c395c890c3702f6efc913f7b8255c1308a6809f9be79ba50bb27e8b2b46103e7ceef0ff23b66c085f810b764f0f38f5c47131e8bb5138205b2f3678323a8500be155006b8c'
+        Authorization: 'Bearer 74ca14b83240e365e6925b22ff78b2f1c41fa880ebe9b0c126f21551c32b6d11fe4dcd381a9f1d1d765242fa5f2c7f7d79190540473877c411cf9200e6e904f2c8dfc32dcc461b00015c5b21d937b59810fe5d6d8ff2b69d4e8371d6fe67c2900e5e8a5ac5e2088a967e78d5efd01ace85b6e59dbb08abbccb644df71b2a5943'
     };
     const res = await fetch('http://localhost:1337/api/products?populate=*', { headers: headers });
 
@@ -17,16 +16,21 @@ async function getData() {
     return res.json();
 }
 
+function Page() {
+    const [data, setData] = useState([]);
+    const { addToCart } = useAppContext();
 
-async function Page() {
-  
-    const { data } = await getData();
- console.log(data[0].id);
-//     const router = useRouter();
-// const handleClick = ()=>{
-//     router.push(`/products/${data.id}`
-// }
-
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const { data } = await getData();
+                setData(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+        fetchData();
+    }, []);
 
     return (
         <section className="text-gray-600 body-font">
@@ -38,24 +42,18 @@ async function Page() {
                     </div>
                 </div>
                 <div className="flex flex-wrap -m-4">
-                    {data.map((item) => {
-                        return (
-                            <div className="xl:w-1/4 md:w-1/2 p-4" key={item.id}>
+                    {data.map((item) => (
+                        <div className="xl:w-1/4 md:w-1/2 p-4" key={item.id}>
                             <div className="bg-gray-100 p-6 rounded-lg">
-                             <img className='h-40 rounded w-full object-fill object-center mb-6' src={item.attributes.pic.data && `http://localhost:1337${item.attributes.pic.data[0].attributes.url}`}
-        alt='contect'/>
-                               
+                                <img className='h-40 rounded w-full object-fill object-center mb-6' src={item.attributes.pic.data && `http://localhost:1337${item.attributes.pic.data[0].attributes.url}`} alt='content' />
                                 <h2 className="text-lg text-gray-900 font-medium title-font mb-4">{item.attributes.Title}</h2>
-                               
                                 <p className="leading-relaxed text-base">{item.attributes.description}</p>
                                 <p className="leading-relaxed text-base">${item.attributes.price}</p>
-                            <Button id={item.id}/>
+                                <Button id={item.id} />
+                               
                             </div>
                         </div>
-                        );
-                    }
-                      
-                    )}
+                    ))}
                 </div>
             </div>
         </section>
